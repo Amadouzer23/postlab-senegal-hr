@@ -48,12 +48,16 @@ function Index() {
 
       <section className="border-y border-border bg-card">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-14 md:grid-cols-3 md:px-8">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center md:text-left">
-              <div className="text-4xl font-bold text-primary md:text-5xl">{s.value}</div>
-              <p className="mt-2 text-sm text-muted-foreground md:text-base">{s.label}</p>
-            </div>
-          ))}
+          {stats.map((s) => {
+            const numeric = parseInt(s.value.replace(/\D/g, ""), 10) || 0;
+            const suffix = s.value.replace(/[\d\s]/g, "");
+            return (
+              <div key={s.label} className="text-center md:text-left">
+                <AnimatedCounter target={numeric} suffix={suffix} />
+                <p className="mt-2 text-sm text-muted-foreground md:text-base">{s.label}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
