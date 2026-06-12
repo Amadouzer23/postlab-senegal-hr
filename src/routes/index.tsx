@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
