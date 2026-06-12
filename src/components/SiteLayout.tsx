@@ -1,20 +1,28 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import type { ReactNode } from "react";
-
-function NavLink({ to, children }: { to: string; children: ReactNode }) {
-  return (
-    <Link
-      to={to}
-      className="px-3 py-2 text-sm font-medium text-foreground/80 transition-colors hover:text-primary"
-      activeProps={{ className: "px-3 py-2 text-sm font-semibold text-primary" }}
-      activeOptions={{ exact: true }}
-    >
-      {children}
-    </Link>
-  );
-}
+import { useState, useRef, useEffect } from "react";
 
 export function SiteLayout() {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  const links = [
+    { to: "/", label: "Accueil" },
+    { to: "/employes", label: "Employés" },
+    { to: "/contact", label: "Contact" },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur">
@@ -23,11 +31,38 @@ export function SiteLayout() {
             <span className="text-2xl" aria-hidden>💼</span>
             <span>PostLab</span>
           </Link>
-          <nav className="flex items-center gap-1">
-            <NavLink to="/">Accueil</NavLink>
-            <NavLink to="/employes">Employés</NavLink>
-            <NavLink to="/contact">Contact</NavLink>
-          </nav>
+
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setIsOpen((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
+              aria-expanded={isOpen}
+              aria-haspopup="menu"
+            >
+              Menu <span aria-hidden>☰</span>
+            </button>
+
+            {isOpen && (
+              <div className="absolute right-0 mt-2 w-44 origin-top-right rounded-md border border-border bg-card shadow-lg ring-1 ring-black/5 animate-fade-in">
+                <ul role="menu" className="py-1">
+                  {links.map((link) => (
+                    <li key={link.to}>
+                      <Link
+                        to={link.to}
+                        onClick={() => setIsOpen(false)}
+                        activeProps={{ className: "bg-primary/10 text-primary font-semibold" }}
+                        activeOptions={{ exact: true }}
+                        className="block px-4 py-2 text-sm text-foreground transition hover:bg-muted"
+                        role="menuitem"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </header>
       <main className="flex-1">
