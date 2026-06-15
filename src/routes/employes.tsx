@@ -88,6 +88,8 @@ function EmployesPage() {
           );
         })}
       </div>
+
+      <AgentIA />
     </section>
   );
 }
