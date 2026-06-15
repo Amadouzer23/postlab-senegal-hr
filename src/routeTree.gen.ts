@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SaisieRhRouteImport } from './routes/saisie-rh'
 import { Route as EmployesRouteImport } from './routes/employes'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SaisieRhRoute = SaisieRhRouteImport.update({
+  id: '/saisie-rh',
+  path: '/saisie-rh',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EmployesRoute = EmployesRouteImport.update({
   id: '/employes',
   path: '/employes',
@@ -33,34 +39,45 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/employes': typeof EmployesRoute
+  '/saisie-rh': typeof SaisieRhRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/employes': typeof EmployesRoute
+  '/saisie-rh': typeof SaisieRhRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/employes': typeof EmployesRoute
+  '/saisie-rh': typeof SaisieRhRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contact' | '/employes'
+  fullPaths: '/' | '/contact' | '/employes' | '/saisie-rh'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contact' | '/employes'
-  id: '__root__' | '/' | '/contact' | '/employes'
+  to: '/' | '/contact' | '/employes' | '/saisie-rh'
+  id: '__root__' | '/' | '/contact' | '/employes' | '/saisie-rh'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactRoute: typeof ContactRoute
   EmployesRoute: typeof EmployesRoute
+  SaisieRhRoute: typeof SaisieRhRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/saisie-rh': {
+      id: '/saisie-rh'
+      path: '/saisie-rh'
+      fullPath: '/saisie-rh'
+      preLoaderRoute: typeof SaisieRhRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/employes': {
       id: '/employes'
       path: '/employes'
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactRoute: ContactRoute,
   EmployesRoute: EmployesRoute,
+  SaisieRhRoute: SaisieRhRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
