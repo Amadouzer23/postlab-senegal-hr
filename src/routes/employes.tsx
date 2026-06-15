@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import AgentIA from "@/components/AgentIA";
 
 export const Route = createFileRoute("/employes")({
   head: () => ({
