@@ -20,6 +20,7 @@ export function SiteLayout() {
   const links = [
     { to: "/", label: "Accueil" },
     { to: "/employes", label: "Employés" },
+    { to: "/conges", label: "Congés" },
     { to: "/saisie-rh", label: "Saisie RH" },
     { to: "/contact", label: "Contact" },
   ];
