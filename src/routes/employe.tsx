@@ -87,13 +87,12 @@ function iconStatut(s: StatutConge) {
 // ── Composant principal ───────────────────────────────────────────────────────
 function EmployePage() {
   const today = new Date();
-  const [mode, setMode]           = useState<"employe" | "rh">("employe");
   const [actif, setActif]         = useState(EMPLOYES[0].nom);
   const [onglet, setOnglet]       = useState<"paie" | "conges" | "presences">("paie");
   const { demandes, ajouterDemande } = useDemandesConge();
   const [form, setForm]           = useState({ dateDebut: "", dateFin: "", raison: "" });
   const [formMsg, setFormMsg]     = useState<string | null>(null);
-  const [presences, setPresences] = useState<Record<string, Etat>>({});
+  const [presences] = useState<Record<string, Etat>>({});
   const [moisP, setMoisP]         = useState(today.getMonth());
   const [anneeP, setAnneeP]       = useState(today.getFullYear());
 
@@ -102,11 +101,6 @@ function EmployePage() {
 
   function presKey(nom: string) { return `${anneeP}-${moisP}-${nom}`; }
   function getPresence(nom: string): Etat { return presences[presKey(nom)] ?? "present"; }
-  function cyclePresence(nom: string) {
-    const ordre: Etat[] = ["present", "absent", "conge"];
-    const idx = ordre.indexOf(getPresence(nom));
-    setPresences(p => ({ ...p, [presKey(nom)]: ordre[(idx + 1) % ordre.length] }));
-  }
   function navMois(d: number) {
     let m = moisP + d, a = anneeP;
     if (m < 0) { m = 11; a--; } if (m > 11) { m = 0; a++; }
@@ -134,36 +128,15 @@ function EmployePage() {
   return (
     <section className="mx-auto max-w-4xl px-4 py-10 md:px-8">
 
-      {/* En-tête mode + sélection */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold md:text-4xl">
-            {mode === "employe" ? "Mon Espace" : "Espace RH — Employés"}
-          </h1>
-          <p className="mt-1 text-muted-foreground text-sm">
-            {mode === "employe" ? `Connecté en tant que ${actif}` : "Vue gestionnaire — accès complet"}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Mode toggle */}
-          <div className="flex overflow-hidden rounded-lg border border-border">
-            {(["employe", "rh"] as const).map(m => (
-              <button key={m} onClick={() => setMode(m)}
-                className={"px-4 py-2 text-xs font-semibold transition " +
-                  (mode === m ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted")}>
-                {m === "employe" ? "👤 Employé" : "🏢 Gestionnaire RH"}
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* En-tête */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold md:text-4xl">Mon Espace</h1>
+        <p className="mt-1 text-muted-foreground text-sm">Connecté en tant que {actif}</p>
       </div>
 
       {/* Sélecteur d'employé */}
       <div className="mt-4 flex items-center gap-3">
-        <label className="text-sm font-medium shrink-0">
-          {mode === "employe" ? "Je suis :" : "Employé consulté :"}
-        </label>
+        <label className="text-sm font-medium shrink-0">Je suis :</label>
         <select value={actif} onChange={e => setActif(e.target.value)}
           className="rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition">
           {EMPLOYES.map(e => <option key={e.nom}>{e.nom}</option>)}
@@ -184,62 +157,33 @@ function EmployePage() {
       {/* ── ONGLET PAIE ────────────────────────────────────────────────────── */}
       {onglet === "paie" && (
         <div className="mt-5">
-          {mode === "employe" ? (
-            <div className="rounded-xl border border-border bg-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-bold">{employe.nom}</p>
-                  <p className="text-sm text-muted-foreground">{employe.poste} · {employe.contrat}</p>
-                </div>
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  Juin 2026
-                </span>
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-bold">{employe.nom}</p>
+                <p className="text-sm text-muted-foreground">{employe.poste} · {employe.contrat}</p>
               </div>
-              <div className="mt-5 divide-y divide-border">
-                {[
-                  { label: "Salaire brut",  val: employe.brut,       accent: false, signe: " " },
-                  { label: "IPRES salarié", val: payslip.ipresTotal, accent: false, signe: "−" },
-                  { label: "IR / ITS",      val: payslip.its,        accent: false, signe: "−" },
-                ].map(r => (
-                  <div key={r.label} className="flex justify-between py-2.5 text-sm">
-                    <span className="text-muted-foreground">{r.label}</span>
-                    <span className="tabular-nums">{r.signe} {f(r.val)}</span>
-                  </div>
-                ))}
-                <div className="flex items-center justify-between pt-4">
-                  <span className="text-base font-bold">Net à payer</span>
-                  <span className="text-xl font-bold text-primary tabular-nums">{f(payslip.net)}</span>
+              <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                Juin 2026
+              </span>
+            </div>
+            <div className="mt-5 divide-y divide-border">
+              {[
+                { label: "Salaire brut",  val: employe.brut,       signe: " " },
+                { label: "IPRES salarié", val: payslip.ipresTotal, signe: "−" },
+                { label: "IR / ITS",      val: payslip.its,        signe: "−" },
+              ].map(r => (
+                <div key={r.label} className="flex justify-between py-2.5 text-sm">
+                  <span className="text-muted-foreground">{r.label}</span>
+                  <span className="tabular-nums">{r.signe} {f(r.val)}</span>
                 </div>
+              ))}
+              <div className="flex items-center justify-between pt-4">
+                <span className="text-base font-bold">Net à payer</span>
+                <span className="text-xl font-bold text-primary tabular-nums">{f(payslip.net)}</span>
               </div>
             </div>
-          ) : (
-            <div className="overflow-hidden rounded-xl border border-border">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    {["Employé","Poste","Brut","IPRES","IR","Net"].map(h => (
-                      <th key={h} className="px-4 py-3 text-left font-semibold text-xs">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {EMPLOYES.map(e => {
-                    const p = calculerPayslip(e);
-                    return (
-                      <tr key={e.nom} className={e.nom === actif ? "bg-primary/5" : "hover:bg-muted/20 transition-colors"}>
-                        <td className="px-4 py-3 font-medium">{e.nom}</td>
-                        <td className="px-4 py-3 text-muted-foreground">{e.poste}</td>
-                        <td className="px-4 py-3 tabular-nums">{f(e.brut)}</td>
-                        <td className="px-4 py-3 tabular-nums text-muted-foreground">{f(p.ipresTotal)}</td>
-                        <td className="px-4 py-3 tabular-nums text-muted-foreground">{f(p.its)}</td>
-                        <td className="px-4 py-3 font-semibold text-primary tabular-nums">{f(p.net)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -320,91 +264,37 @@ function EmployePage() {
             </button>
           </div>
 
-          {mode === "employe" ? (
-            /* Vue employé — mes présences */
-            <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-sm font-semibold mb-4">Mes présences — {MOIS_NOMS[moisP]} {anneeP}</p>
-              {(() => {
-                const etat = getPresence(actif);
-                const cfg  = ETATS_CFG.find(c => c.val === etat)!;
-                return (
-                  <div className="flex items-center gap-4">
-                    <div className={`rounded-full border px-4 py-2 text-sm font-semibold ${cfg.color}`}>
-                      {cfg.label}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {etat === "present"
-                        ? `${joursOuvr} jours ouvrables travaillés`
-                        : etat === "absent"
-                        ? "Marqué absent ce mois"
-                        : "En congé ce mois"}
-                    </div>
+          <div className="rounded-xl border border-border bg-card p-5">
+            <p className="text-sm font-semibold mb-4">Mes présences — {MOIS_NOMS[moisP]} {anneeP}</p>
+            {(() => {
+              const etat = getPresence(actif);
+              const cfg  = ETATS_CFG.find(c => c.val === etat)!;
+              return (
+                <div className="flex items-center gap-4">
+                  <div className={`rounded-full border px-4 py-2 text-sm font-semibold ${cfg.color}`}>
+                    {cfg.label}
                   </div>
-                );
-              })()}
-              <div className="mt-4 grid grid-cols-3 gap-3">
-                {ETATS_CFG.map(cfg => (
-                  <div key={cfg.val} className={`rounded-lg border p-3 text-center ${cfg.color}`}>
-                    <p className="text-lg font-bold">
-                      {getPresence(actif) === cfg.val ? joursOuvr : 0}
-                    </p>
-                    <p className="text-xs">{cfg.label}</p>
+                  <div className="text-sm text-muted-foreground">
+                    {etat === "present"
+                      ? `${joursOuvr} jours ouvrables travaillés`
+                      : etat === "absent"
+                      ? "Marqué absent ce mois"
+                      : "En congé ce mois"}
                   </div>
-                ))}
-              </div>
+                </div>
+              );
+            })()}
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {ETATS_CFG.map(cfg => (
+                <div key={cfg.val} className={`rounded-lg border p-3 text-center ${cfg.color}`}>
+                  <p className="text-lg font-bold">
+                    {getPresence(actif) === cfg.val ? joursOuvr : 0}
+                  </p>
+                  <p className="text-xs">{cfg.label}</p>
+                </div>
+              ))}
             </div>
-          ) : (
-            /* Vue RH — gestion présences */
-            <>
-              <div className="grid grid-cols-3 gap-3">
-                {ETATS_CFG.map(cfg => ({
-                  ...cfg,
-                  count: EMPLOYES.filter(e => getPresence(e.nom) === cfg.val).length,
-                })).map(cfg => (
-                  <div key={cfg.val} className={`rounded-xl border p-3 text-center ${cfg.color}`}>
-                    <p className="text-2xl font-bold tabular-nums">{cfg.count}</p>
-                    <p className="text-xs">{cfg.label}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="overflow-hidden rounded-xl border border-border">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/40">
-                      <th className="px-4 py-3 text-left font-semibold">Employé</th>
-                      <th className="px-4 py-3 text-center font-semibold">Statut</th>
-                      <th className="px-4 py-3 text-center font-semibold hidden sm:table-cell">Jours</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {EMPLOYES.map(e => {
-                      const etat = getPresence(e.nom);
-                      const cfg  = ETATS_CFG.find(c => c.val === etat)!;
-                      return (
-                        <tr key={e.nom} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-4 py-3 font-medium">{e.nom}
-                            <span className="ml-2 text-xs text-muted-foreground">{e.poste}</span>
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <button onClick={() => cyclePresence(e.nom)}
-                              className={`rounded-full border px-4 py-1 text-xs font-semibold transition hover:opacity-80 ${cfg.color}`}
-                              title="Cliquer pour changer">
-                              {cfg.label}
-                            </button>
-                          </td>
-                          <td className="px-4 py-3 text-center text-muted-foreground hidden sm:table-cell">
-                            {etat === "present" ? joursOuvr : etat === "absent" ? 0 : "—"}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-xs text-muted-foreground">Cliquez sur un badge pour le faire passer : Présent → Absent → Congé</p>
-            </>
-          )}
+          </div>
         </div>
       )}
     </section>
