@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { AlertTriangle, FileText, Search, Users } from "lucide-react";
-import AgentIA from "@/components/AgentIA";
+import * as XLSX from "xlsx";
 
 export const Route = createFileRoute("/employes")({
   head: () => ({
@@ -34,25 +34,25 @@ function joursAvantEcheance(dateISO: string): number {
   return Math.round((fin.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function exporterCSV(liste: Employe[]) {
-  const entete = ["Nom", "Poste", "Contrat", "Date de fin", "Statut"];
+function exporterExcel(liste: Employe[]) {
   const lignes = liste.map((e) => {
     const jours = e.contrat === "CDD" && e.finContrat ? joursAvantEcheance(e.finContrat) : null;
     const statut = jours !== null && jours >= 0 && jours <= 30 ? "Échéance proche" : e.statut;
-    return [e.nom, e.poste, e.contrat, e.finContrat ?? "", statut];
+    return {
+      Nom: e.nom,
+      Poste: e.poste,
+      Contrat: e.contrat,
+      "Date de fin": e.finContrat ?? "",
+      Statut: statut,
+    };
   });
 
-  const csv = [entete, ...lignes]
-    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
-    .join("\r\n");
+  const ws = XLSX.utils.json_to_sheet(lignes);
+  ws["!cols"] = [{ wch: 20 }, { wch: 20 }, { wch: 10 }, { wch: 14 }, { wch: 18 }];
 
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "employes.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Employés");
+  XLSX.writeFile(wb, "employes.xlsx");
 }
 
 const filtres = ["Tous", "CDI", "CDD", "Stage"] as const;
@@ -86,10 +86,10 @@ function EmployesPage() {
           <p className="text-muted-foreground">Suivi des contrats et congés</p>
         </div>
         <button
-          onClick={() => exporterCSV(liste)}
+          onClick={() => exporterExcel(liste)}
           className="mt-1 flex shrink-0 items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium transition hover:border-primary/50 hover:bg-primary/5"
         >
-          📥 Exporter en CSV
+          📥 Exporter en Excel
         </button>
       </div>
 
@@ -199,7 +199,6 @@ function EmployesPage() {
         })}
       </div>
 
-      <AgentIA />
     </section>
   );
 }

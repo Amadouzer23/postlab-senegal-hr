@@ -1,96 +1,163 @@
-import { Link, Outlet } from "@tanstack/react-router";
-import { useState, useRef, useEffect } from "react";
+import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import {
+  CalendarDays,
+  ClipboardList,
+  CreditCard,
+  FileText,
+  Home,
+  Mail,
+  Menu,
+  Users,
+  X,
+} from "lucide-react";
+import AgentIA from "@/components/AgentIA";
 
-export function SiteLayout() {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+const links = [
+  { to: "/",          label: "Accueil",   Icon: Home },
+  { to: "/employes",  label: "Employés",  Icon: Users },
+  { to: "/paie",      label: "Paie",      Icon: CreditCard },
+  { to: "/conges",    label: "Congés",    Icon: CalendarDays },
+  { to: "/presences", label: "Présences", Icon: ClipboardList },
+  { to: "/saisie-rh", label: "Saisie RH", Icon: FileText },
+  { to: "/contact",   label: "Contact",   Icon: Mail },
+];
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
-
-  const links = [
-    { to: "/", label: "Accueil" },
-    { to: "/employes", label: "Employés" },
-    { to: "/conges", label: "Congés" },
-    { to: "/saisie-rh", label: "Saisie RH" },
-    { to: "/contact", label: "Contact" },
-  ];
+function NavItem({ to, label, Icon, onClick }: (typeof links)[number] & { onClick?: () => void }) {
+  const { location } = useRouterState();
+  const active = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:px-8">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
-            <span className="text-2xl" aria-hidden>💼</span>
-            <span>PostLab</span>
-          </Link>
+    <Link
+      to={to}
+      onClick={onClick}
+      className={
+        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors " +
+        (active
+          ? "bg-primary text-primary-foreground shadow-sm"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground")
+      }
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      {label}
+    </Link>
+  );
+}
 
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setIsOpen((v) => !v)}
-              className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary"
-              aria-expanded={isOpen}
-              aria-haspopup="menu"
-            >
-              Menu <span aria-hidden>☰</span>
+function Sidebar({ onClose }: { onClose?: () => void }) {
+  return (
+    <div className="flex h-full flex-col bg-background">
+      {/* Profile */}
+      <div className="flex items-center gap-3 border-b border-border px-5 py-5">
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+          PL
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-foreground">PostLab RH</p>
+          <p className="truncate text-xs text-muted-foreground">Gestionnaire</p>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {links.map((link) => (
+          <NavItem key={link.to} {...link} onClick={onClose} />
+        ))}
+      </nav>
+
+      {/* Bottom branding */}
+      <div className="border-t border-border px-5 py-4">
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} PostLab SARL</p>
+        <p className="text-xs text-muted-foreground">Dakar, Sénégal</p>
+      </div>
+    </div>
+  );
+}
+
+export function SiteLayout() {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="flex min-h-screen">
+      {/* Desktop sidebar */}
+      <aside className="hidden w-56 shrink-0 border-r border-border lg:block">
+        <div className="sticky top-0 h-screen">
+          <Sidebar />
+        </div>
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <aside
+        className={
+          "fixed inset-y-0 left-0 z-50 w-56 border-r border-border shadow-xl transition-transform duration-200 lg:hidden " +
+          (mobileOpen ? "translate-x-0" : "-translate-x-full")
+        }
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="font-bold text-primary">💼 PostLab</span>
+            <button onClick={() => setMobileOpen(false)} className="rounded-md p-1 hover:bg-muted">
+              <X className="h-4 w-4" />
             </button>
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <Sidebar onClose={() => setMobileOpen(false)} />
+          </div>
+        </div>
+      </aside>
 
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-44 origin-top-right rounded-md border border-border bg-card shadow-lg ring-1 ring-black/5 animate-fade-in">
-                <ul role="menu" className="py-1">
-                  {links.map((link) => (
-                    <li key={link.to}>
-                      <Link
-                        to={link.to}
-                        onClick={() => setIsOpen(false)}
-                        activeProps={{ className: "bg-primary/10 text-primary font-semibold" }}
-                        activeOptions={{ exact: true }}
-                        className="block px-4 py-2 text-sm text-foreground transition hover:bg-muted"
-                        role="menuitem"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+      {/* Main area */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Mobile top bar */}
+        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur lg:hidden">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="rounded-md p-1.5 hover:bg-muted"
+            aria-label="Ouvrir le menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <Link to="/" className="flex items-center gap-2 text-base font-bold text-primary">
+            <span>💼</span> PostLab
+          </Link>
+        </header>
+
+        <main className="flex-1">
+          <Outlet />
+        </main>
+
+        <footer className="border-t border-border bg-muted/40">
+          <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm text-muted-foreground md:grid-cols-3 md:px-8">
+            <div>
+              <div className="mb-2 flex items-center gap-2 font-semibold text-foreground">
+                <span aria-hidden>💼</span> PostLab
               </div>
-            )}
-          </div>
-        </div>
-      </header>
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <footer className="border-t border-border bg-muted/40">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm text-muted-foreground md:grid-cols-3 md:px-8">
-          <div>
-            <div className="mb-2 flex items-center gap-2 font-semibold text-foreground">
-              <span aria-hidden>💼</span> PostLab
+              <p>La RH simplifiée pour les PME sénégalaises.</p>
             </div>
-            <p>La RH simplifiée pour les PME sénégalaises.</p>
+            <div>
+              <div className="mb-2 font-semibold text-foreground">Contact</div>
+              <p>contact@postlab.sn</p>
+              <p>+221 33 824 00 00</p>
+              <p>Sicap Liberté 6, Dakar, Sénégal</p>
+            </div>
+            <div>
+              <div className="mb-2 font-semibold text-foreground">Mentions légales</div>
+              <p>© {new Date().getFullYear()} PostLab SARL — NINEA 005678901</p>
+              <p>Conditions d'utilisation · Confidentialité</p>
+            </div>
           </div>
-          <div>
-            <div className="mb-2 font-semibold text-foreground">Contact</div>
-            <p>contact@postlab.sn</p>
-            <p>+221 33 824 00 00</p>
-            <p>Sicap Liberté 6, Dakar, Sénégal</p>
-          </div>
-          <div>
-            <div className="mb-2 font-semibold text-foreground">Mentions légales</div>
-            <p>© {new Date().getFullYear()} PostLab SARL — NINEA 005678901</p>
-            <p>Conditions d'utilisation · Confidentialité</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
+
+      <AgentIA />
     </div>
   );
 }

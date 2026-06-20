@@ -64,15 +64,16 @@ function Index() {
       <section className="mx-auto max-w-6xl px-4 py-16 md:px-8">
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { icon: "📑", title: "Contrats & échéances", desc: "Alertes automatiques avant chaque fin de CDD ou de stage." },
-            { icon: "💰", title: "Paie conforme", desc: "SMIG, IPRES, CSS et IR calculés pour chaque bulletin." },
-            { icon: "🌴", title: "Congés & présences", desc: "Soldes mis à jour en temps réel, validations en un clic." },
+            { icon: "📑", title: "Contrats & échéances", desc: "Alertes automatiques avant chaque fin de CDD ou de stage.", to: "/employes" },
+            { icon: "💰", title: "Paie conforme",         desc: "SMIG, IPRES, CSS et IR calculés pour chaque bulletin.",       to: "/paie" },
+            { icon: "🌴", title: "Congés & présences",    desc: "Soldes mis à jour en temps réel, validations en un clic.",    to: "/presences" },
           ].map((f) => (
-            <div key={f.title} className="rounded-xl border border-border bg-card p-6 transition hover:border-primary/40 hover:shadow-md">
+            <Link key={f.title} to={f.to} className="group rounded-xl border border-border bg-card p-6 transition hover:border-primary/50 hover:shadow-md">
               <div className="text-3xl">{f.icon}</div>
-              <h3 className="mt-3 text-lg font-semibold">{f.title}</h3>
+              <h3 className="mt-3 text-lg font-semibold group-hover:text-primary transition-colors">{f.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{f.desc}</p>
-            </div>
+              <p className="mt-3 text-xs font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity">Accéder →</p>
+            </Link>
           ))}
         </div>
       </section>

@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SaisieRhRouteImport } from './routes/saisie-rh'
+import { Route as PresencesRouteImport } from './routes/presences'
+import { Route as PaieRouteImport } from './routes/paie'
 import { Route as EmployesRouteImport } from './routes/employes'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CongesRouteImport } from './routes/conges'
@@ -18,6 +20,16 @@ import { Route as IndexRouteImport } from './routes/index'
 const SaisieRhRoute = SaisieRhRouteImport.update({
   id: '/saisie-rh',
   path: '/saisie-rh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PresencesRoute = PresencesRouteImport.update({
+  id: '/presences',
+  path: '/presences',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaieRoute = PaieRouteImport.update({
+  id: '/paie',
+  path: '/paie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmployesRoute = EmployesRouteImport.update({
@@ -46,6 +58,8 @@ export interface FileRoutesByFullPath {
   '/conges': typeof CongesRoute
   '/contact': typeof ContactRoute
   '/employes': typeof EmployesRoute
+  '/paie': typeof PaieRoute
+  '/presences': typeof PresencesRoute
   '/saisie-rh': typeof SaisieRhRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +67,8 @@ export interface FileRoutesByTo {
   '/conges': typeof CongesRoute
   '/contact': typeof ContactRoute
   '/employes': typeof EmployesRoute
+  '/paie': typeof PaieRoute
+  '/presences': typeof PresencesRoute
   '/saisie-rh': typeof SaisieRhRoute
 }
 export interface FileRoutesById {
@@ -61,14 +77,38 @@ export interface FileRoutesById {
   '/conges': typeof CongesRoute
   '/contact': typeof ContactRoute
   '/employes': typeof EmployesRoute
+  '/paie': typeof PaieRoute
+  '/presences': typeof PresencesRoute
   '/saisie-rh': typeof SaisieRhRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/conges' | '/contact' | '/employes' | '/saisie-rh'
+  fullPaths:
+    | '/'
+    | '/conges'
+    | '/contact'
+    | '/employes'
+    | '/paie'
+    | '/presences'
+    | '/saisie-rh'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/conges' | '/contact' | '/employes' | '/saisie-rh'
-  id: '__root__' | '/' | '/conges' | '/contact' | '/employes' | '/saisie-rh'
+  to:
+    | '/'
+    | '/conges'
+    | '/contact'
+    | '/employes'
+    | '/paie'
+    | '/presences'
+    | '/saisie-rh'
+  id:
+    | '__root__'
+    | '/'
+    | '/conges'
+    | '/contact'
+    | '/employes'
+    | '/paie'
+    | '/presences'
+    | '/saisie-rh'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +116,8 @@ export interface RootRouteChildren {
   CongesRoute: typeof CongesRoute
   ContactRoute: typeof ContactRoute
   EmployesRoute: typeof EmployesRoute
+  PaieRoute: typeof PaieRoute
+  PresencesRoute: typeof PresencesRoute
   SaisieRhRoute: typeof SaisieRhRoute
 }
 
@@ -86,6 +128,20 @@ declare module '@tanstack/react-router' {
       path: '/saisie-rh'
       fullPath: '/saisie-rh'
       preLoaderRoute: typeof SaisieRhRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/presences': {
+      id: '/presences'
+      path: '/presences'
+      fullPath: '/presences'
+      preLoaderRoute: typeof PresencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paie': {
+      id: '/paie'
+      path: '/paie'
+      fullPath: '/paie'
+      preLoaderRoute: typeof PaieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/employes': {
@@ -124,6 +180,8 @@ const rootRouteChildren: RootRouteChildren = {
   CongesRoute: CongesRoute,
   ContactRoute: ContactRoute,
   EmployesRoute: EmployesRoute,
+  PaieRoute: PaieRoute,
+  PresencesRoute: PresencesRoute,
   SaisieRhRoute: SaisieRhRoute,
 }
 export const routeTree = rootRouteImport
