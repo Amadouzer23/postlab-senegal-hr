@@ -38,8 +38,8 @@ function Index() {
               <Link to="/employes" className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90">
                 Je gère la RH
               </Link>
-              <Link to="/contact" className="inline-flex items-center justify-center rounded-md border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary">
-                Je suis dirigeant
+              <Link to="/employe" className="inline-flex items-center justify-center rounded-md border border-border bg-card px-6 py-3 text-sm font-semibold text-foreground transition hover:border-primary hover:text-primary">
+                Je suis employé
               </Link>
             </div>
           </div>

@@ -1,29 +1,40 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  CalendarDays,
-  ClipboardList,
-  CreditCard,
-  FileText,
-  Home,
-  Mail,
-  Menu,
-  Users,
-  X,
+  CalendarDays, CreditCard, FileText,
+  Home, Mail, Menu, UserCircle, Users, X,
 } from "lucide-react";
 import AgentIA from "@/components/AgentIA";
 
-const links = [
-  { to: "/",          label: "Accueil",   Icon: Home },
-  { to: "/employes",  label: "Employés",  Icon: Users },
-  { to: "/paie",      label: "Paie",      Icon: CreditCard },
-  { to: "/conges",    label: "Congés",    Icon: CalendarDays },
-  { to: "/presences", label: "Présences", Icon: ClipboardList },
-  { to: "/saisie-rh", label: "Saisie RH", Icon: FileText },
-  { to: "/contact",   label: "Contact",   Icon: Mail },
+type NavLink = { to: string; label: string; Icon: React.ElementType };
+
+const NAV_SECTIONS: { title: string | null; items: NavLink[] }[] = [
+  {
+    title: null,
+    items: [{ to: "/", label: "Accueil", Icon: Home }],
+  },
+  {
+    title: "Espace RH",
+    items: [
+      { to: "/employes",  label: "Employés",  Icon: Users },
+      { to: "/paie",      label: "Paie",       Icon: CreditCard },
+      { to: "/conges",    label: "Congés",     Icon: CalendarDays },
+      { to: "/saisie-rh", label: "Saisie RH",  Icon: FileText },
+    ],
+  },
+  {
+    title: "Espace Employé",
+    items: [
+      { to: "/employe", label: "Mon Espace", Icon: UserCircle },
+    ],
+  },
+  {
+    title: null,
+    items: [{ to: "/contact", label: "Contact", Icon: Mail }],
+  },
 ];
 
-function NavItem({ to, label, Icon, onClick }: (typeof links)[number] & { onClick?: () => void }) {
+function NavItem({ to, label, Icon, onClick }: NavLink & { onClick?: () => void }) {
   const { location } = useRouterState();
   const active = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
@@ -58,10 +69,21 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {links.map((link) => (
-          <NavItem key={link.to} {...link} onClick={onClose} />
+      {/* Nav avec sections */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {NAV_SECTIONS.map((section, i) => (
+          <div key={i} className={i > 0 ? "mt-4" : ""}>
+            {section.title && (
+              <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                {section.title}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {section.items.map(link => (
+                <NavItem key={link.to} {...link} onClick={onClose} />
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 
@@ -88,19 +110,14 @@ export function SiteLayout() {
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setMobileOpen(false)} />
       )}
 
       {/* Mobile sidebar */}
-      <aside
-        className={
-          "fixed inset-y-0 left-0 z-50 w-56 border-r border-border shadow-xl transition-transform duration-200 lg:hidden " +
-          (mobileOpen ? "translate-x-0" : "-translate-x-full")
-        }
-      >
+      <aside className={
+        "fixed inset-y-0 left-0 z-50 w-56 border-r border-border shadow-xl transition-transform duration-200 lg:hidden " +
+        (mobileOpen ? "translate-x-0" : "-translate-x-full")
+      }>
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <span className="font-bold text-primary">💼 PostLab</span>
@@ -118,11 +135,7 @@ export function SiteLayout() {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile top bar */}
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur lg:hidden">
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="rounded-md p-1.5 hover:bg-muted"
-            aria-label="Ouvrir le menu"
-          >
+          <button onClick={() => setMobileOpen(true)} className="rounded-md p-1.5 hover:bg-muted" aria-label="Ouvrir le menu">
             <Menu className="h-5 w-5" />
           </button>
           <Link to="/" className="flex items-center gap-2 text-base font-bold text-primary">
@@ -138,7 +151,7 @@ export function SiteLayout() {
           <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 text-sm text-muted-foreground md:grid-cols-3 md:px-8">
             <div>
               <div className="mb-2 flex items-center gap-2 font-semibold text-foreground">
-                <span aria-hidden>💼</span> PostLab
+                <span>💼</span> PostLab
               </div>
               <p>La RH simplifiée pour les PME sénégalaises.</p>
             </div>
