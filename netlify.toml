@@ -1,6 +1,6 @@
 [build]
   command = "npm run build"
-  publish = ".output/public"
+  publish = "dist"
 
 [functions]
   directory = ".netlify/functions-internal"
@@ -10,4 +10,3 @@
   from = "/*"
   to = "/.netlify/functions/server"
   status = 200
-  force = true
