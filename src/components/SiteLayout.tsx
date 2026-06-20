@@ -1,7 +1,7 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  CalendarDays, CreditCard, FileText,
+  CalendarDays, FileText,
   Home, Mail, Menu, UserCircle, Users, X,
 } from "lucide-react";
 import AgentIA from "@/components/AgentIA";
@@ -17,7 +17,6 @@ const NAV_SECTIONS: { title: string | null; items: NavLink[] }[] = [
     title: "Espace RH",
     items: [
       { to: "/employes",  label: "Employés",  Icon: Users },
-      { to: "/paie",      label: "Paie",       Icon: CreditCard },
       { to: "/conges",    label: "Congés",     Icon: CalendarDays },
       { to: "/saisie-rh", label: "Saisie RH",  Icon: FileText },
     ],
