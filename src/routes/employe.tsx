@@ -4,6 +4,7 @@ import {
   CalendarDays, CheckCircle, ChevronLeft, ChevronRight,
   Clock, CreditCard, UserCheck, XCircle,
 } from "lucide-react";
+import { useDemandesConge, type StatutConge } from "@/hooks/useDemandesConge";
 
 export const Route = createFileRoute("/employe")({
   head: () => ({
@@ -54,20 +55,6 @@ function calculerPayslip(e: typeof EMPLOYES[0]) {
 
 function f(n: number) { return Math.round(n).toLocaleString("fr-FR") + " FCFA"; }
 
-// ── Types congés ─────────────────────────────────────────────────────────────
-type StatutConge = "En attente" | "Acceptée" | "Refusée";
-type DemandeConge = {
-  id: string; employe: string; dateDebut: string;
-  dateFin: string; raison: string; statut: StatutConge;
-};
-
-const DEMANDES_INIT: DemandeConge[] = [
-  { id: "1", employe: "Modou Fall",    dateDebut: "2026-07-01", dateFin: "2026-07-05", raison: "Vacances en famille",      statut: "En attente" },
-  { id: "2", employe: "Awa Ndiaye",    dateDebut: "2026-06-22", dateFin: "2026-06-24", raison: "Raisons personnelles",      statut: "Acceptée" },
-  { id: "3", employe: "Fatou Sow",     dateDebut: "2026-07-10", dateFin: "2026-07-18", raison: "Congés annuels",            statut: "En attente" },
-  { id: "4", employe: "Aïssatou Ba",   dateDebut: "2026-06-15", dateFin: "2026-06-16", raison: "Rendez-vous médical",       statut: "Refusée" },
-];
-
 // ── Types présences ───────────────────────────────────────────────────────────
 type Etat = "present" | "absent" | "conge";
 const ETATS_CFG = [
@@ -103,13 +90,12 @@ function EmployePage() {
   const [mode, setMode]           = useState<"employe" | "rh">("employe");
   const [actif, setActif]         = useState(EMPLOYES[0].nom);
   const [onglet, setOnglet]       = useState<"paie" | "conges" | "presences">("paie");
-  const [demandes, setDemandes]   = useState<DemandeConge[]>(DEMANDES_INIT);
+  const { demandes, ajouterDemande, changerStatut } = useDemandesConge();
   const [form, setForm]           = useState({ dateDebut: "", dateFin: "", raison: "" });
   const [formMsg, setFormMsg]     = useState<string | null>(null);
   const [presences, setPresences] = useState<Record<string, Etat>>({});
   const [moisP, setMoisP]         = useState(today.getMonth());
   const [anneeP, setAnneeP]       = useState(today.getFullYear());
-  const [presActif, setPresActif] = useState(EMPLOYES[0].nom);
 
   const employe = EMPLOYES.find(e => e.nom === actif) ?? EMPLOYES[0];
   const payslip = calculerPayslip(employe);
@@ -127,23 +113,13 @@ function EmployePage() {
     setMoisP(m); setAnneeP(a);
   }
 
-  function soumettreConge(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function soumettreConge() {
     if (!form.dateDebut || !form.dateFin) return;
     if (form.dateFin < form.dateDebut) { setFormMsg("La date de fin doit être après la date de début."); return; }
-    const nouvelle: DemandeConge = {
-      id: Date.now().toString(), employe: actif,
-      dateDebut: form.dateDebut, dateFin: form.dateFin,
-      raison: form.raison || "Sans motif précisé", statut: "En attente",
-    };
-    setDemandes(d => [nouvelle, ...d]);
+    ajouterDemande({ employe: actif, dateDebut: form.dateDebut, dateFin: form.dateFin, raison: form.raison || "Sans motif précisé" });
     setForm({ dateDebut: "", dateFin: "", raison: "" });
     setFormMsg("✅ Demande envoyée — en attente de validation RH.");
     setTimeout(() => setFormMsg(null), 4000);
-  }
-
-  function changerStatut(id: string, statut: StatutConge) {
-    setDemandes(d => d.map(r => r.id === id ? { ...r, statut } : r));
   }
 
   const mesDemandes    = demandes.filter(d => d.employe === actif);
@@ -281,7 +257,7 @@ function EmployePage() {
               {/* Formulaire demande */}
               <div className="rounded-xl border border-border bg-card p-5">
                 <p className="font-semibold">Nouvelle demande de congé</p>
-                <form onSubmit={soumettreConge} className="mt-4 grid gap-4 sm:grid-cols-2">
+                <form onSubmit={(e) => { e.preventDefault(); soumettreConge(); }} className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs font-medium text-muted-foreground mb-1">Date de début</label>
                     <input type="date" required value={form.dateDebut}
